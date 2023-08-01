@@ -1,4 +1,4 @@
-module github.com/linganmin/goctl-swagger
+module github.com/bluettipower/goctl-swagger
 
 go 1.16
 

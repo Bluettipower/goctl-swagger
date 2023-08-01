@@ -3,7 +3,7 @@
 ### 1. 编译goctl-swagger插件
 
 ```
-GOPROXY=https://goproxy.cn/,direct go install github.com/linganmin/goctl-swagger@latest
+GOPROXY=https://goproxy.cn/,direct go install github.com/bluettipower/goctl-swagger@latest
 ```
 
 ### 2. 配置环境
