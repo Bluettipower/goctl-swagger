@@ -1,0 +1,15 @@
+version: '3'
+
+networks:
+  default:
+    external:
+      name: tools
+
+services:
+  zero:
+    image: registry.cn-hangzhou.aliyuncs.com/lanni-base/build-base:1.18
+    restart: always
+    working_dir: /data
+    volumes:
+      - ./:/data
+    tty: true

@@ -462,6 +462,7 @@ func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.
 			if tag, err := member.GetPropertyName(); err == nil {
 				kv.Key = tag
 			}
+
 			if kv.Key == "" {
 				memberStruct, _ := member.Type.(spec.DefineStruct)
 				for _, m := range memberStruct.Members {
@@ -482,6 +483,29 @@ func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.
 						schema.Properties = &swaggerSchemaObjectProperties{}
 					}
 					*schema.Properties = append(*schema.Properties, mkv)
+
+					for _, tag := range m.Tags() {
+						if len(tag.Options) == 0 {
+							if !contains(schema.Required, tag.Name) && tag.Name != "required" {
+								schema.Required = append(schema.Required, tag.Name)
+							}
+							continue
+						}
+
+						required := true
+						for _, option := range tag.Options {
+							// case strings.HasPrefix(option, defaultOption):
+							// case strings.HasPrefix(option, optionsOption):
+
+							if strings.HasPrefix(option, optionalOption) || strings.HasPrefix(option, omitemptyOption) {
+								required = false
+							}
+						}
+
+						if required && !contains(schema.Required, tag.Name) {
+							schema.Required = append(schema.Required, tag.Name)
+						}
+					}
 				}
 				continue
 			}
