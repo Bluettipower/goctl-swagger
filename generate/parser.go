@@ -108,7 +108,7 @@ func applyGenerate(p *plugin.Plugin, host string, basePath string, schemes strin
 	renderServiceRoutes(p.Api.Service, p.Api.Service.Groups, s.Paths, requestResponseRefs)
 	m := messageMap{}
 
-	renderReplyAsDefinition(s.Definitions, m, p.Api.Types, requestResponseRefs)
+	renderReplyAsDefinition(s.Definitions, m, p.Api.Types, p.Api.Service.Groups, requestResponseRefs)
 
 	return &s, nil
 }
@@ -411,7 +411,25 @@ func renderStruct(member spec.Member) swaggerParameterObject {
 	return sp
 }
 
-func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.Type, refs refMap) {
+func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.Type, groups []spec.Group, refs refMap) {
+	sarr := make([]map[string]string, 0, 20)
+	for _, v := range groups {
+		var arr reflect.Value
+		if reflect.ValueOf(v.Routes[0].RequestType).IsValid() {
+			arr = reflect.ValueOf(v.Routes[0].RequestType).Field(1)
+		}
+
+		slen := arr.Len()
+		for i := 0; i < slen; i++ {
+			if arr.Index(i).IsValid() {
+				sarr = append(sarr, map[string]string{
+					"Name":    arr.Index(i).FieldByName("Name").String(),
+					"Comment": arr.Index(i).FieldByName("Comment").String(),
+				})
+			}
+		}
+	}
+
 	for _, i2 := range p {
 		schema := swaggerSchemaObject{
 			schemaCore: schemaCore{
@@ -421,6 +439,13 @@ func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.
 		defineStruct, _ := i2.(spec.DefineStruct)
 
 		schema.Title = defineStruct.Name()
+
+		// 内部如果有一个对象 将其注释信息放在这一级
+		for _, v := range sarr {
+			if t := strings.TrimSpace(strings.ToLower(v["Name"])); t == strings.TrimSpace(strings.ToLower(schema.Title)) && t != "" {
+				schema.Description = strings.TrimSpace(strings.TrimLeft(v["Comment"], "/"))
+			}
+		}
 
 		for _, member := range defineStruct.Members {
 			if hasPathParameters(member) || hasHeaderParameters(member) {
