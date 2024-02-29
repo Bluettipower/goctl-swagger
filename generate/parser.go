@@ -414,19 +414,17 @@ func renderStruct(member spec.Member) swaggerParameterObject {
 func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.Type, groups []spec.Group, refs refMap) {
 	sarr := make([]map[string]string, 0, 20)
 	for _, v := range groups {
-		var arr reflect.Value
-		if reflect.ValueOf(v.Routes[0].RequestType).IsValid() {
-			arr = reflect.ValueOf(v.Routes[0].RequestType).Field(1)
-		}
-
+		arr := reflect.ValueOf(v.Routes[0].RequestType).Field(1)
 		slen := arr.Len()
 		for i := 0; i < slen; i++ {
-			if arr.Index(i).IsValid() {
-				sarr = append(sarr, map[string]string{
-					"Name":    arr.Index(i).FieldByName("Name").String(),
-					"Comment": arr.Index(i).FieldByName("Comment").String(),
-				})
-			}
+			// fmt.Println(arr.Index(i).FieldByName("Type").MethodByName("Name").Call([]reflect.Value{})[0].String(), arr.Index(i).FieldByName("Name"), arr.Index(i).FieldByName("Tag"))
+			name := arr.Index(i).FieldByName("Type").MethodByName("Name").Call([]reflect.Value{})[0].String()
+			name = strings.TrimLeft(name, "*")
+			sarr = append(sarr, map[string]string{
+				// "Name":    arr.Index(i).FieldByName("Name").String(),
+				"Name":    name,
+				"Comment": arr.Index(i).FieldByName("Comment").String(),
+			})
 		}
 	}
 
@@ -442,7 +440,7 @@ func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.
 
 		// 内部如果有一个对象 将其注释信息放在这一级
 		for _, v := range sarr {
-			if t := strings.TrimSpace(strings.ToLower(v["Name"])); t == strings.TrimSpace(strings.ToLower(schema.Title)) && t != "" {
+			if strings.TrimSpace(strings.ToLower(v["Name"])) == strings.TrimSpace(strings.ToLower(schema.Title)) {
 				schema.Description = strings.TrimSpace(strings.TrimLeft(v["Comment"], "/"))
 			}
 		}
