@@ -414,7 +414,11 @@ func renderStruct(member spec.Member) swaggerParameterObject {
 func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.Type, groups []spec.Group, refs refMap) {
 	sarr := make([]map[string]string, 0, 20)
 	for _, v := range groups {
-		arr := reflect.ValueOf(v.Routes[0].RequestType).Field(1)
+		t := reflect.ValueOf(v.Routes[0].RequestType)
+		if !t.IsValid() || t.IsZero() {
+			continue
+		}
+		arr := t.Field(1)
 		slen := arr.Len()
 		for i := 0; i < slen; i++ {
 			// fmt.Println(arr.Index(i).FieldByName("Type").MethodByName("Name").Call([]reflect.Value{})[0].String(), arr.Index(i).FieldByName("Name"), arr.Index(i).FieldByName("Tag"))
