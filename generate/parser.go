@@ -253,7 +253,7 @@ func renderServiceRoutes(service spec.Service, groups []spec.Group, paths swagge
 
 			if defineStruct, ok := route.RequestType.(spec.DefineStruct); ok {
 				for _, member := range defineStruct.Members {
-					if strings.Contains(member.Tag, "form") {
+					if hasFormParameters(member) {
 						operationObject.Consumes = []string{"multipart/form-data"}
 						break
 					}
@@ -529,6 +529,15 @@ func hasPathParameters(member spec.Member) bool {
 func hasHeaderParameters(member spec.Member) bool {
 	for _, tag := range member.Tags() {
 		if tag.Key == "header" {
+			return true
+		}
+	}
+	return false
+}
+
+func hasFormParameters(member spec.Member) bool {
+	for _, tag := range member.Tags() {
+		if tag.Key == "form" {
 			return true
 		}
 	}
