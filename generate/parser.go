@@ -318,6 +318,7 @@ func renderServiceRoutes(service spec.Service, groups []spec.Group, paths swagge
 
 			if len(route.AtDoc.Properties) > 0 {
 				operationObject.Description, _ = strconv.Unquote(route.AtDoc.Properties["description"])
+				operationObject.Deprecated, _ = strconv.ParseBool(route.AtDoc.Properties["deprecated"])
 			}
 
 			operationObject.Description = strings.ReplaceAll(operationObject.Description, "\"", "")
