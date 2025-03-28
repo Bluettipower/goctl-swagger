@@ -32,6 +32,32 @@ const (
 	atRespDoc       = "@respdoc-"
 )
 
+var baseResponse = swaggerSchemaObject{
+	schemaCore: schemaCore{
+		Type: "object",
+	},
+	Properties: &swaggerSchemaObjectProperties{
+		keyVal{
+			Key: "code",
+			Value: swaggerSchemaObject{
+				schemaCore: schemaCore{
+					Type:   "integer",
+					Format: "int32",
+				},
+				Description: "返回码",
+			},
+		},
+		keyVal{
+			Key: "msg",
+			Value: swaggerSchemaObject{
+				schemaCore: schemaCore{
+					Type: "string",
+				},
+			},
+		},
+	},
+}
+
 func parseRangeOption(option string) (float64, float64, bool) {
 	const str = "\\[([+-]?\\d+(\\.\\d+)?):([+-]?\\d+(\\.\\d+)?)\\]"
 	result := regexp.MustCompile(str).FindStringSubmatch(option)
@@ -245,7 +271,18 @@ func renderServiceRoutes(service spec.Service, groups []spec.Group, paths swagge
 					"200": swaggerResponseObject{
 						Description: desc,
 						Schema: swaggerSchemaObject{
-							schemaCore: respSchema,
+							// schemaCore: respSchema,
+							AllOf: &[]swaggerSchemaObject{
+								{schemaCore: schemaCore{Ref: "#/definitions/BaseResponse"}},
+								{Properties: &swaggerSchemaObjectProperties{
+									keyVal{
+										Key: "data",
+										Value: swaggerSchemaObject{
+											schemaCore: respSchema,
+										},
+									},
+								}},
+							},
 						},
 					},
 				},
@@ -432,6 +469,7 @@ func renderReplyAsDefinition(d swaggerDefinitionsObject, m messageMap, p []spec.
 			})
 		}
 	}
+	d["BaseResponse"] = baseResponse
 
 	for _, i2 := range p {
 		schema := swaggerSchemaObject{

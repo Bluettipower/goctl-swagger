@@ -234,6 +234,9 @@ type swaggerSchemaObject struct {
 	Properties           *swaggerSchemaObjectProperties `json:"properties,omitempty"`
 	AdditionalProperties *swaggerSchemaObject           `json:"additionalProperties,omitempty"`
 
+	//
+	AllOf *[]swaggerSchemaObject `json:"allOf,omitempty"`
+
 	Description string `json:"description,omitempty"`
 	Title       string `json:"title,omitempty"`
 
